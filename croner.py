@@ -1,7 +1,10 @@
 import random 
 
+import settings.settings as sett
+import database.database as db
+
 from PySide6.QtWidgets import QApplication, QMainWindow
-from design import Ui_MainWindow
+from windows.design import Ui_MainWindow
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -17,6 +20,9 @@ class MainWindow(QMainWindow):
         self.ui.label.setText(str(number))
 
 def main():
+    settings = sett.Settings()
+    database = db.DataBase(settings)
+
     app = QApplication()
     window = MainWindow()
     window.show()
