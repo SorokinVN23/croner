@@ -1,8 +1,13 @@
 import sqlite3
+import glob
+import os
+import re
 
 class DataBase():
     def __init__(self, settings):
-        self.settings = settings 
+        self.settings = settings
+        self._init_database()
+        self._apply_migrations() 
         
     def execute_query(self, query, params = None):
         connection = sqlite3.connect(self.settings.database, self.settings.timeout)
@@ -24,3 +29,32 @@ class DataBase():
 
         finally:
             connection.close()
+
+    def _init_database(self):
+        query = f"""create table if not exists Migrations (
+            id INTEGER PRIMARY KEY,
+            name TEXT NOT NULL,
+            applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );"""
+        self.execute_query(query)
+
+    def _apply_migrations(self):
+        pattern = os.path.join(self.settings.migrations, "*.sql")
+        paths = glob.glob(pattern)
+        mykey = lambda path : int(re.search(r"(\d+)", path).group(0))
+        paths.sort(key = mykey)
+
+        query = "select name from Migrations"
+        applyed_migrations = self.execute_query(query)
+        applyed_migrations = {row[0] for row in applyed_migrations}
+
+        insert_query = "INSERT INTO Migrations (name) VALUES (?)"
+
+        for path in paths:
+            migrate_name = os.path.basename(path)
+            if migrate_name not in applyed_migrations:
+                with open(path, "r") as f:
+                    query = f.read()
+                    self.execute_query(query)
+                    self.execute_query(insert_query, (migrate_name,))
+                    
