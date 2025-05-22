@@ -2,13 +2,30 @@ import sqlite3
 import glob
 import os
 import re
+from typing import Tuple
 
-class DataBase():
+import core.store as cstore
+
+
+class DataBase(cstore.Store):
     def __init__(self, settings):
         self.settings = settings
         self._init_database()
         self._apply_migrations() 
-        
+
+    def record_save(self, text):
+        query = r"insert into records (text) values (?)"
+        self.execute_query(query, (text,))
+
+    def get_record_dates(self, limit : int = 30) -> Tuple:
+        query = f"""SELECT DISTINCT DATE(time) AS date_only
+            FROM Records
+            ORDER BY date_only DESC
+            limit {limit};"""
+        rows = self.execute_query(query)
+        res = tuple(row[0] for row in rows)
+        return res
+
     def execute_query(self, query, params = None):
         connection = sqlite3.connect(self.settings.database, self.settings.timeout)
 

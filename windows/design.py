@@ -15,8 +15,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QLabel, QMainWindow, QMenuBar,
-    QPushButton, QSizePolicy, QStatusBar, QWidget)
+from PySide6.QtWidgets import (QApplication, QDateEdit, QHeaderView, QLineEdit,
+    QMainWindow, QMenuBar, QPushButton, QSizePolicy,
+    QStatusBar, QTableWidget, QTableWidgetItem, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -27,14 +28,16 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName(u"centralwidget")
         self.pushButton = QPushButton(self.centralwidget)
         self.pushButton.setObjectName(u"pushButton")
-        self.pushButton.setGeometry(QRect(10, 520, 75, 24))
-        self.label = QLabel(self.centralwidget)
-        self.label.setObjectName(u"label")
-        self.label.setGeometry(QRect(20, 90, 251, 41))
-        font = QFont()
-        font.setPointSize(20)
-        font.setBold(True)
-        self.label.setFont(font)
+        self.pushButton.setGeometry(QRect(720, 530, 75, 24))
+        self.dateEdit = QDateEdit(self.centralwidget)
+        self.dateEdit.setObjectName(u"dateEdit")
+        self.dateEdit.setGeometry(QRect(10, 10, 110, 22))
+        self.lineEdit = QLineEdit(self.centralwidget)
+        self.lineEdit.setObjectName(u"lineEdit")
+        self.lineEdit.setGeometry(QRect(10, 500, 781, 22))
+        self.tableWidget = QTableWidget(self.centralwidget)
+        self.tableWidget.setObjectName(u"tableWidget")
+        self.tableWidget.setGeometry(QRect(10, 40, 781, 441))
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
@@ -50,8 +53,7 @@ class Ui_MainWindow(object):
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
-        self.pushButton.setText(QCoreApplication.translate("MainWindow", u"PushButton", None))
-        self.label.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
+        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"Croner", None))
+        self.pushButton.setText(QCoreApplication.translate("MainWindow", "Сохранить", None))
     # retranslateUi
 
