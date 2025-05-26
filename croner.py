@@ -21,6 +21,9 @@ class MainWindow(QMainWindow):
 
         # self.fill_combo()
         self.ui.combo.beforePopup.connect(self.fill_combo)
+        self.ui.combo.currentIndexChanged.connect(self.update_date)
+
+        self.combo_update_processing = False
         
 
     def generate_number(self):
@@ -34,9 +37,19 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def fill_combo(self):
+        self.combo_update_processing = True
         record_dates = self.core.get_record_dates()
         self.ui.combo.clear()
         self.ui.combo.addItems(record_dates)
+        self.combo_update_processing = False
+    
+    
+    @Slot()
+    def update_date(self):
+        if self.combo_update_processing == False:
+            text = self.ui.combo.currentText()
+            print(text)
+            #self.ui.dateEdit.setDateTime(text)
          
 
 def main():
