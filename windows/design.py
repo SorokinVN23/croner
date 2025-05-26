@@ -9,43 +9,111 @@
 ################################################################################
 
 from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
-    QMetaObject, QObject, QPoint, QRect,
+    QMetaObject, QObject, QPoint, QRect, Signal,
     QSize, QTime, QUrl, Qt)
 from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
-    QFont, QFontDatabase, QGradient, QIcon,
+    QFont, QFontDatabase, QGradient, QIcon, QMouseEvent,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QDateEdit, QHeaderView, QLineEdit,
-    QMainWindow, QMenuBar, QPushButton, QSizePolicy,
+    QMainWindow, QMenuBar, QPushButton, QSizePolicy, QComboBox, QHBoxLayout, QVBoxLayout,
     QStatusBar, QTableWidget, QTableWidgetItem, QWidget)
 
+class CustomComboBox(QComboBox):
+
+    beforePopup = Signal()
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.view().installEventFilter(self)  # Устанавливаем фильтр событий для выпадающего списка
+        #self._is_dropdown_open = False # Флаг для отслеживания состояния выпадающего списка
+
+    def mousePressEvent(self, event: QMouseEvent):
+        """Перехватываем события мыши."""
+        if self.isEditable(): # Если комбобокс редактируемый, то не проверяем нажатие на кнопку
+           super().mousePressEvent(event)
+           return
+
+        arrow_rect = self.get_arrow_rect() # Получаем прямоугольник кнопки
+
+        if arrow_rect.contains(event.pos()):
+            # Клик произошел в области кнопки раскрытия списка
+            self.beforePopup.emit()
+            #self._is_dropdown_open = True
+            self.showPopup() # Вызываем showPopup вручную, т.к. клик "съеден"
+            #if not self._is_dropdown_open:
+            #    print("Кнопка раскрытия списка нажата (открытие)")
+            #    
+            #else:
+            #    print("Кнопка раскрытия списка нажата (закрытие)")
+            #    self._is_dropdown_open = False # Сбрасываем флаг.
+            #    self.hidePopup()
+        else:
+            super().mousePressEvent(event) # Передаем событие дальше
+
+    def get_arrow_rect(self):
+        """Определяет прямоугольник кнопки раскрытия списка."""
+        # Это может потребовать адаптации в зависимости от стиля QComboBox
+        # width = self.style().pixelMetric(self.style().PM_MenuButtonIndicator, self)
+        width = self.width()
+        height = self.height()
+        #x = self.width() - width
+        x = 0
+        y = 0
+        return QRect(x, y, width, height)
+
+    def eventFilter(self, obj, event):
+        """Фильтруем события для выпадающего списка."""
+        if obj == self.view() and event.type() == QMouseEvent.MouseButtonRelease:
+            self._is_dropdown_open = False  # Сбрасываем флаг при закрытии списка
+        return super().eventFilter(obj, event)
+
 class Ui_MainWindow(object):
-    def setupUi(self, MainWindow):
+    def setupUi(self, MainWindow : QMainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
         MainWindow.resize(800, 600)
-        self.centralwidget = QWidget(MainWindow)
-        self.centralwidget.setObjectName(u"centralwidget")
-        self.pushButton = QPushButton(self.centralwidget)
-        self.pushButton.setObjectName(u"pushButton")
-        self.pushButton.setGeometry(QRect(720, 530, 75, 24))
-        self.dateEdit = QDateEdit(self.centralwidget)
-        self.dateEdit.setObjectName(u"dateEdit")
-        self.dateEdit.setGeometry(QRect(10, 10, 110, 22))
-        self.lineEdit = QLineEdit(self.centralwidget)
-        self.lineEdit.setObjectName(u"lineEdit")
-        self.lineEdit.setGeometry(QRect(10, 500, 781, 22))
-        self.tableWidget = QTableWidget(self.centralwidget)
-        self.tableWidget.setObjectName(u"tableWidget")
-        self.tableWidget.setGeometry(QRect(10, 40, 781, 441))
-        MainWindow.setCentralWidget(self.centralwidget)
+
+        
+        central_widget = QWidget(MainWindow)
+        MainWindow.setCentralWidget(central_widget)
+
+        vbox = QVBoxLayout(central_widget)
+
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 800, 22))
+        vbox.addWidget(self.menubar)
+
+        hbox1 = QHBoxLayout(central_widget)
+        self.dateEdit = QDateEdit(MainWindow)
+        self.dateEdit.setObjectName(u"dateEdit")
+        hbox1.addWidget(self.dateEdit)
+        self.combo = CustomComboBox(MainWindow)
+        self.combo.setObjectName(u"combo")
+        hbox1.addWidget(self.combo)
+        vbox.addLayout(hbox1)
+
+        self.tableWidget = QTableWidget(MainWindow)
+        self.tableWidget.setObjectName(u"tableWidget")
+        vbox.addWidget(self.tableWidget)
+
+        hbox2 = QHBoxLayout()
+        self.lineEdit = QLineEdit(MainWindow)
+        self.lineEdit.setObjectName(u"lineEdit")
+        hbox2.addWidget(self.lineEdit)
+        self.pushButton = QPushButton(MainWindow)
+        self.pushButton.setObjectName(u"pushButton")
+        hbox2.addWidget(self.pushButton)
+        vbox.addLayout(hbox2)
+
+        
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName(u"statusbar")
+
         MainWindow.setStatusBar(self.statusbar)
+
+        MainWindow.setLayout(vbox)
 
         self.retranslateUi(MainWindow)
 
