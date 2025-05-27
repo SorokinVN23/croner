@@ -4,7 +4,7 @@ import settings.settings as sett
 import database.database as db
 
 from PySide6.QtWidgets import QApplication, QMainWindow
-from PySide6.QtCore import Slot
+from PySide6.QtCore import Slot, QDate
 from windows.design import Ui_MainWindow
 from core.core import Core
 
@@ -13,18 +13,16 @@ class MainWindow(QMainWindow):
         super().__init__()
         
         self.core = core
-
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
         self.ui.pushButton.clicked.connect(self.save_text)
-
-        # self.fill_combo()
         self.ui.combo.beforePopup.connect(self.fill_combo)
         self.ui.combo.currentIndexChanged.connect(self.update_date)
 
         self.combo_update_processing = False
-        
+        self.fill_combo()
+        self.update_date()
 
     def generate_number(self):
         number = random.randint(1, 100)
@@ -40,16 +38,15 @@ class MainWindow(QMainWindow):
         self.combo_update_processing = True
         record_dates = self.core.get_record_dates()
         self.ui.combo.clear()
-        self.ui.combo.addItems(record_dates)
         self.combo_update_processing = False
-    
+        self.ui.combo.addItems(record_dates)
     
     @Slot()
     def update_date(self):
         if self.combo_update_processing == False:
             text = self.ui.combo.currentText()
-            print(text)
-            #self.ui.dateEdit.setDateTime(text)
+            date = QDate.fromString(text, "yyyy-MM-dd")
+            self.ui.dateEdit.setDate(date)
          
 
 def main():
