@@ -2,6 +2,7 @@ import sqlite3
 import glob
 import os
 import re
+import datetime
 from typing import Tuple
 
 import core.store as cstore
@@ -13,6 +14,18 @@ class DataBase(cstore.Store):
         self._init_database()
         self._apply_migrations() 
 
+    def get_date_records(self, date : datetime.date) -> Tuple:
+        query = f"""SELECT time, text, id AS date_only
+            FROM Records
+            WHERE time >= ? and time <= ?
+            ORDER BY time DESC;"""
+        
+        day_start = datetime.datetime.combine(date, datetime.time.min)
+        day_end = datetime.datetime.combine(date, datetime.time.max)
+        rows = self.execute_query(query, (day_start, day_end))
+        res = tuple(rows)
+        return res
+    
     def record_save(self, text):
         query = r"insert into records (text) values (?)"
         self.execute_query(query, (text,))
